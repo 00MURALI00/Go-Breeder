@@ -11,9 +11,9 @@ import (
 
 const port = ":4000"
 
-type application struct{
+type application struct {
 	templateMap map[string]*template.Template
-	config appConfig
+	config      appConfig
 }
 
 type appConfig struct {
@@ -43,4 +43,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 }

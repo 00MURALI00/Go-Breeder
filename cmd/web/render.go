@@ -7,15 +7,15 @@ import (
 	"net/http"
 )
 
-type templateDate struct {
+
+type templateData struct {
 	Data map[string]any
 }
 
-func (app *application) render(w http.ResponseWriter, t string, td *templateDate) {
+func (app *application) render(w http.ResponseWriter, t string, td *templateData) {
 	var tmpl *template.Template
 
-	// if we are using the template chache try to get the template from our map
-
+	// if we are using the template cache, try to get the template from our map, stored in the receiver
 	if app.config.useCache {
 		if templateFromMap, ok := app.templateMap[t]; ok {
 			tmpl = templateFromMap
@@ -28,26 +28,27 @@ func (app *application) render(w http.ResponseWriter, t string, td *templateDate
 			log.Println("Error building template:", err)
 			return
 		}
-		log.Println("building template foorm disk")
+		log.Println("building template from disk")
 		tmpl = newTemplate
 	}
 
 	if td == nil {
-		td = &templateDate{}
+		td = &templateData{}
 	}
 
 	if err := tmpl.ExecuteTemplate(w, t, td); err != nil {
-		log.Println("Error executing template", err)
+		log.Println("Error executing template:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+
 }
 
 func (app *application) buildTemplateFromDisk(t string) (*template.Template, error) {
 	templateSlice := []string{
-		"./template/base.layout.gohtml",
-		"./template/partials/header.partial.gohtml",
-		"./template/partials/footer.partial.gohtml",
-		fmt.Sprintf("./template/%s", t),
+		"./templates/base.layout.gohtml",
+		"./templates/partials/header.partial.gohtml",
+		"./templates/partials/footer.partial.gohtml",
+		fmt.Sprintf("./templates/%s", t),
 	}
 
 	tmpl, err := template.ParseFiles(templateSlice...)
@@ -56,5 +57,6 @@ func (app *application) buildTemplateFromDisk(t string) (*template.Template, err
 	}
 
 	app.templateMap[t] = tmpl
+
 	return tmpl, nil
 }
